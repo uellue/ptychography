@@ -246,7 +246,7 @@ def skyline_dot(tile, filter_center, skyline):
 
 
 def generate_masks(reconstruct_shape, mask_shape, dtype, wavelength, dpix, semiconv,
-        semiconv_pix, transformation=None, center=None, cutoff=1):
+        semiconv_pix, transformation=None, center=None, cutoff=1, cutoff_freq=np.float32('inf')):
     reconstruct_shape = np.array(reconstruct_shape)
 
     d_Kf = np.sin(semiconv)/wavelength/semiconv_pix
@@ -277,6 +277,10 @@ def generate_masks(reconstruct_shape, mask_shape, dtype, wavelength, dpix, semic
             flip = qp > (reconstruct_shape / 2)
             real_qp = qp.copy()
             real_qp[flip] = qp[flip] - reconstruct_shape[flip]
+
+            if np.sum(real_qp**2) > cutoff_freq**2:
+                masks.append(sparse.zeros(mask_shape, dtype=dtype))
+                continue
 
             # Shift of diffraction order relative to zero order
             # without rotation
